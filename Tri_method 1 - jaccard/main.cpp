@@ -1,5 +1,5 @@
 /* Run:
-g++ tokenization.cpp shingling.cpp minhashing.cpp jaccard.cpp main.cpp -o near_dup
+g++ tokenization.cpp shingling.cpp Hashing.cpp jaccard.cpp main.cpp -o near_dup
 ./near_dup
 */
 #include "function.h"
@@ -15,27 +15,13 @@ int main()
         std::vector<std::string> s;
 
         std::string line, cell;
-        /*while (std::getline(fin, line)) 
-        {
-            std::stringstream lineStream(line);
 
-            // Tách bằng dấu Tab '\t'
-            while (std::getline(lineStream, cell, '\t')) 
-            {
-                // In mỗi ô ra một dòng
-                if (!cell.empty()) 
-                {
-                    //fout << cell << "\n";
-                    s.push_back(cell);
-                }
-            }
-        }*/
-       // Đọc trực tiếp từ file, dùng '\t' làm điểm dừng
+       // Read from file, use '\t' to seperate variants.
         while (std::getline(fin, cell, '\t')) 
         {
             if (!cell.empty()) 
             {
-                // Loại bỏ dấu ngoặc kép dư thừa nếu là Input 2
+                // Some text have 2 or more paragraph, which declare in file dataset as "/text/", so I remove ""
                 if (cell.front() == '"' && cell.back() == '"') {
                     cell = cell.substr(1, cell.length() - 2);
                 }
@@ -53,11 +39,7 @@ int main()
             s[i] = normalize(s[i]);
             tokenize(s[i], tokens[i]);
             shingle(tokens[i], k, shingles[i]);
-            sig[i] = Minhash(shingles[i]);
-            
-            // for (uint32_t val : sig[i])
-            //     fout << val << " ";
-            // fout << "\n";
+            sig[i] = Hashing(shingles[i]);
             
             if (i >= 1)
             {

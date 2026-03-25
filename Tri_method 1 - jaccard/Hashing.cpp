@@ -12,7 +12,7 @@ uint32_t hashfunction(const std::string& shingle, uint32_t seed) {
     return hash;
 }
 
-std::vector<uint32_t> Minhash(std::unordered_set<std::string> shingles)
+std::vector<uint32_t> Hashing(std::unordered_set<std::string> shingles)
 {
     std::vector<uint32_t> signatures(sseed, UINT32_MAX);
     
