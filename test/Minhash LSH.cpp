@@ -48,8 +48,8 @@ int main() {
     LSHIndex lsh_index;
 
     std::string project_root = ".";
-    std::string original_lib_path = project_root + "/../Near-Dup dataset/Benchmark ready/meta/original_lib.json";
-    std::string target_suite_path = project_root + "/../Near-Dup dataset/Benchmark ready/meta/target_suite.json";
+    std::string original_lib_path = project_root + "/../Near-Dup dataset/Benchmark ready/meta/original_lib_master.json";
+    std::string target_suite_path = project_root + "/../Near-Dup dataset/Benchmark ready/meta/target_suite_master.json";
     json original_lib = load_from_dataset(original_lib_path);
     json target_suite = load_from_dataset(target_suite_path);
     if (original_lib.empty() || target_suite.empty()) 
@@ -57,6 +57,6 @@ int main() {
         std::cerr << "One or more datasets are empty or failed to load." << std::endl;
         return 1;
     }
-    metrics benchmarkResults = runBenchmark(minhasher, lsh_index, original_lib, target_suite, project_root);
+    metrics benchmarkResults = runBenchmark(minhasher, lsh_index, original_lib, target_suite);
     run_n_report(benchmarkResults);
 }

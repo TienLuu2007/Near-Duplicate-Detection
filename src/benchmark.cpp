@@ -1,7 +1,7 @@
 #include "benchmark.h"
 
 metrics runBenchmark(MinHash &minhasher, LSHIndex &lsh_index,
-const nlohmann::json &original_library, const nlohmann::json &target_suite, const std::string &project_root)
+const nlohmann::json &original_library, const nlohmann::json &target_suite)
 {
     IndexedData document_features = 
         index_original_documents(const_cast<nlohmann::json&>(original_library), minhasher, lsh_index);
@@ -10,12 +10,12 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite, cons
     res.total_docs_in_library = original_library.size();
     res.total_queries = target_suite.size();
 
-    for (const auto& obj : target_suite)
+    for (const auto &obj : target_suite)
     {
         std::string target_id = obj["Target_id"].get<std::string>();
         std::string ground_truth_id = obj["Ground truth"].get<std::string>();
         std::string relative_path = obj["Target_file"].get<std::string>();
-        std::string full_path = project_root + relative_path;
+        std::string full_path = "./" + relative_path;
         
         std::string extracted_text = load_text_from_file(full_path);
         
@@ -48,10 +48,13 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite, cons
             {
                 ranked_candidates.push_back({candidate_id, real_jaccard});
                 
-                if (candidate_id == ground_truth_id) {
+                if (candidate_id == ground_truth_id) 
+                {
                     res.ground_truth_match++;
                     parent_found_in_lsh = true;
-                } else {
+                } 
+                else 
+                {
                     res.collateral_match++;
                 }
             } 
@@ -70,7 +73,7 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite, cons
         std::sort(ranked_candidates.begin(), ranked_candidates.end(), 
                  [](const auto& a, const auto& b) { return a.second > b.second; });
 
-        for (int i = 0; i < ranked_candidates.size(); ++i) {
+        for (size_t i = 0; i < ranked_candidates.size(); ++i) {
             if (ranked_candidates[i].first == ground_truth_id) {
                 res.mrr_sum += 1.0 / (i + 1);
                 break;

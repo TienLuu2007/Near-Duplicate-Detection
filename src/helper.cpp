@@ -13,12 +13,9 @@ IndexedData index_original_documents(nlohmann::json &dataset, MinHash &minhasher
     {
         std::string doc_id = obj["Source_id"].get<std::string>();
         std::string relative_path = obj["Source_file"].get<std::string>();
-        std::string full_path = relative_path;
+        std::string full_path = "./" + relative_path;
         std::string extracted_text = load_text_from_file(full_path);
-        std::set<std::string> shingles = Shingler::get_shingles(extracted_text, 4);
-        std::vector<uint64_t> signature = getSignature(shingles, minhasher);
-
-        std::set<std::string> shingles = Shingler::get_shingles(extracted_text, 4);
+        std::set<std::string> shingles = Shingler::get_shingles(extracted_text, Config::K_GRAM);
         std::vector<uint64_t> signature = getSignature(shingles, minhasher);
 
         lsh_index.add_to_index(doc_id, signature);

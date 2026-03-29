@@ -69,6 +69,6 @@ struct metrics
 };
 
 metrics runBenchmark(MinHash &minhasher, LSHIndex &lsh_index,
-const nlohmann::json &original_library, const nlohmann::json &target_suite, const std::string &project_root);
+const nlohmann::json &original_library, const nlohmann::json &target_suite);
 
 #endif
