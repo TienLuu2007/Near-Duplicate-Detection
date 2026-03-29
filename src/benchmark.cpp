@@ -10,14 +10,50 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite)
     res.total_docs_in_library = original_library.size();
     res.total_queries = target_suite.size();
 
+    int query_count = 0;
+
+    std::cout << "\n--- Starting Benchmark Loop ---" << std::endl;
+
     for (const auto &obj : target_suite)
     {
+        query_count++;
+
+        // --- Safe guard ---
+        bool has_id = obj.contains("Target_id");
+        bool has_truth = obj.contains("Ground_truth");
+        bool has_file = obj.contains("Target_file");
+
+        if (!has_id || !has_truth || !has_file) 
+        {
+            std::cerr << "\nCRITICAL ERROR in target_suite_master.json!" << std::endl;
+            std::cerr << "Problem found at entry index: " << query_count << std::endl;
+            
+            if (!has_id)    std::cerr << " -> Missing key: 'Target_id'" << std::endl;
+            if (!has_truth) std::cerr << " -> Missing key: 'Ground_truth'" << std::endl;
+            if (!has_file)  std::cerr << " -> Missing key: 'Target_file'" << std::endl;
+
+            std::cerr << "Full Object Content causing the crash:\n" << obj.dump(4) << std::endl;
+            
+            continue; 
+        }
+
         std::string target_id = obj["Target_id"].get<std::string>();
-        std::string ground_truth_id = obj["Ground truth"].get<std::string>();
+        std::string ground_truth_id = obj["Ground_truth"].get<std::string>();
         std::string relative_path = obj["Target_file"].get<std::string>();
-        std::string full_path = "./" + relative_path;
         
+        if (query_count % 10 == 0 || query_count == 1) 
+        {
+            std::cout << "Benchmarking Query [" << query_count << "/" << res.total_queries << "]: " << target_id << "..." << std::endl;
+        }
+
+        std::string full_path = "./" + relative_path;
         std::string extracted_text = load_text_from_file(full_path);
+
+        if (extracted_text.empty()) 
+        {
+            std::cerr << "Warning: Could not read target file: " << full_path << std::endl;
+            continue;
+        }
         
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -36,9 +72,13 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite)
 
         for (const auto& candidate_id : candidates)
         {
+            // Safeguard: Check if candidate_id actually exists in indexed features
+            if (document_features.shingles.find(candidate_id) == document_features.shingles.end()) 
+            {
+                continue; 
+            }
+
             double real_jaccard = getJaccard(target_shingles, document_features.shingles[candidate_id]);
-            
-            // Calculate MinHash Estimated Jaccard (for MAE)
             double estimated_jaccard = minhasher.calculate_similarity(query_signature, document_features.signatures[candidate_id]);
             
             res.total_jaccard_error += std::abs(real_jaccard - estimated_jaccard);
@@ -64,22 +104,22 @@ const nlohmann::json &original_library, const nlohmann::json &target_suite)
             }
         }
 
-        // Handle false negatives
-        if (!parent_found_in_lsh) {
+        if (!parent_found_in_lsh) 
+        {
             res.false_negatives++;
         }
 
-        // Mean Reciprocal Rank
         std::sort(ranked_candidates.begin(), ranked_candidates.end(), 
-                 [](const auto& a, const auto& b) { return a.second > b.second; });
+                  [](const auto& a, const auto& b) { return a.second > b.second; });
 
-        for (size_t i = 0; i < ranked_candidates.size(); ++i) {
-            if (ranked_candidates[i].first == ground_truth_id) {
+        for (size_t i = 0; i < ranked_candidates.size(); ++i) 
+        {
+            if (ranked_candidates[i].first == ground_truth_id) 
+            {
                 res.mrr_sum += 1.0 / (i + 1);
                 break;
             }
         }
-
     }
 
     return res;

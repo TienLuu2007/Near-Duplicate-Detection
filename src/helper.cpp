@@ -6,17 +6,50 @@ std::vector<uint64_t> getSignature(std::set<std::string> &shingles, MinHash &min
     return signature;
 }
 
-IndexedData index_original_documents(nlohmann::json &dataset, MinHash &minhasher, LSHIndex &lsh_index)
+IndexedData index_original_documents(nlohmann::json &dataset, MinHash &minhasher, LSHIndex &lsh_index) 
 {
     IndexedData data;
-    for(const auto &obj : dataset)
+    int index = 0;
+
+    for (const auto &obj : dataset) 
     {
+        index++;
+
+        if (!obj.is_object()) 
+        {
+            std::cerr << "\nCRITICAL: Entry at index " << index << " is not a JSON object!" << std::endl;
+            std::cerr << "Actual value: " << obj.dump() << std::endl;
+            continue;
+        }
+
+        bool has_id = obj.contains("Source_id");
+        bool has_file = obj.contains("Source_file");
+
+        if (!has_id || !has_file) 
+        {
+            std::cerr << "\nCRITICAL: Missing keys at index " << index << std::endl;
+            if (!has_id) std::cerr << " -> Missing 'Source_id'" << std::endl;
+            if (!has_file) std::cerr << " -> Missing 'Source_file'" << std::endl;
+            std::cerr << "Full Object Content: " << obj.dump(4) << std::endl;
+            continue; 
+        }
+
         std::string doc_id = obj["Source_id"].get<std::string>();
         std::string relative_path = obj["Source_file"].get<std::string>();
-        std::string full_path = "./" + relative_path;
+        
+        std::string full_path = "./" + relative_path; 
+
+        std::cout << "Processing [" << index << "]: " << doc_id << "..." << std::endl;
+
         std::string extracted_text = load_text_from_file(full_path);
+        if (extracted_text.empty()) 
+        {
+             std::cerr << "Warning: Empty or missing file at " << full_path << std::endl;
+             continue;
+        }
+
         std::set<std::string> shingles = Shingler::get_shingles(extracted_text, Config::K_GRAM);
-        std::vector<uint64_t> signature = getSignature(shingles, minhasher);
+        std::vector<uint64_t> signature = minhasher.compute_signature(shingles);
 
         lsh_index.add_to_index(doc_id, signature);
         data.shingles[doc_id] = shingles;
