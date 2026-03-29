@@ -15,11 +15,28 @@ namespace Config
 
     inline void setConfig(int k, int b, int r, double t) 
     {
-        K_GRAM = k;
-        BANDS = b;
-        ROWS = r;
-        SIGNATURE_SIZE = b * r;
-        THRESHOLD = t;
+        if(k >= 1) K_GRAM = k;
+        if(b >= 1)
+        {
+            BANDS = b;
+            SIGNATURE_SIZE = b * r;
+        } 
+        if(r >= 1)
+        {
+            ROWS = r;
+            SIGNATURE_SIZE = b * r;
+        }
+        if(t >= 0 && t <= 1) THRESHOLD = t;
+    }
+
+    inline void setThreshold(double t) 
+    {
+        if(t >= 0 && t <= 1) THRESHOLD = t;
+    }
+
+    inline void setKGram(int k) 
+    {
+        if(k >= 1) K_GRAM = k;
     }
 }
 

@@ -68,7 +68,39 @@ struct metrics
     }
 };
 
-metrics runBenchmark(MinHash &minhasher, LSHIndex &lsh_index,
+metrics LocalitySensitiveHashing(MinHash &minhasher, LSHIndex &lsh_index,
 const nlohmann::json &original_library, const nlohmann::json &target_suite);
+
+metrics BruteForce(const nlohmann::json &original_library, const nlohmann::json &target_suite);
+
+class timer
+{
+    private:
+        std::chrono::high_resolution_clock::time_point start_time;
+    public:
+        void start();
+
+        double elapsed_ms() const;
+};
+
+class Tracker
+{
+    private:
+        int query_count;
+        int total_queries;
+    public:
+        Tracker(int total);
+
+        void tick(const std::string& target_id) 
+        {
+            query_count++;
+            if (query_count % 10 == 0 || query_count == 1) 
+            {
+                std::cout << "Benchmarking Query [" << query_count << "/" << total_queries << "]: " << target_id << "..." << std::endl;
+            }
+        }
+
+        int get_query_count() const { return query_count; }
+};
 
 #endif
