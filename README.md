@@ -43,11 +43,20 @@ __Download our dataset here:__ https://drive.google.com/drive/u/3/folders/1qliLo
 
 # Performance metrics
 To validate the efficiency and accuracy of the LSH approach, we track the following key metrics against the Brute Force baseline:
-* Precision@Threshold: 
-* Recovery Rate (Recall): The percentage of ground-truth duplicates successfully retrieved.
-* Selectivity: The ratio of the library actually compared (aiming for $< 1\%$).
-* Mean Reciprocal Rank (MRR): Evaluates if the correct source is the top-ranked result.
-* Average query time: Total time taken to process a single document from the target suite.
+* **Precision @ Threshold ($t$):** The ratio of retrieved documents that actually meet the similarity target.
+  $$\text{Precision} = \frac{|\text{True Positives}|}{|\text{Total Candidates Found}|}$$
+
+* **Recovery Rate (Recall):** The percentage of ground-truth duplicates successfully retrieved by the LSH index.
+  $$\text{Recall} = \frac{|\text{Retrieved Ground Truths}|}{|\text{Total Ground Truths in Dataset}|}$$
+
+* **Selectivity:** The fraction of the library that the LSH algorithm actually chose to compare, representing the reduction in search space.
+  $$\text{Selectivity} = \frac{\text{Total Comparisons Performed}}{N_{library} \times N_{suite}} \times 100\%$$
+
+* **Mean Reciprocal Rank (MRR):** Measures the ranking quality of the results.
+  $$\text{MRR} = \frac{1}{|Q|} \sum_{i=1}^{|Q|} \frac{1}{\text{rank}_i}$$
+
+* **Mean Absolute Error (MAE):** The average difference between the estimated Jaccard similarity ($J_{est}$) and the actual Jaccard value ($J_{act}$).
+  $$\text{MAE} = \frac{1}{n} \sum |J_{act} - J_{est}|$$
 
 # Experiment results
 ## Prerequisites
